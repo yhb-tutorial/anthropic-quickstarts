@@ -59,17 +59,23 @@ RUN git clone --branch v1.5.0 https://github.com/novnc/noVNC.git /opt/noVNC && \
     git clone --branch v0.12.0 https://github.com/novnc/websockify /opt/noVNC/utils/websockify && \
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html
 
-# 配置SSH服务
+# SSH服务器配置
 RUN mkdir /var/run/sshd
-RUN echo 'root:root' | chpasswd
-RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+# 设置computeruse用户的密码为'computeruse'
+RUN echo 'computeruse:computeruse' | chpasswd
+# 允许使用密码登录
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+# 允许SSH登录
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
 # 配置SSH监听所有接口
 RUN echo "ListenAddress 0.0.0.0" >> /etc/ssh/sshd_config
 RUN echo "AddressFamily any" >> /etc/ssh/sshd_config
 
 # SSH登录修复
 RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+
 
 # 设置环境变量
 ENV NOTVISIBLE "in users profile"
