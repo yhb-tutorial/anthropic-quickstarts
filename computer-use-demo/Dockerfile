@@ -61,7 +61,7 @@ RUN git clone --branch v1.5.0 https://github.com/novnc/noVNC.git /opt/noVNC && \
 
 # 配置SSH服务
 RUN mkdir /var/run/sshd
-RUN echo 'computeruse:computeruse' | chpasswd
+RUN echo 'root:root' | chpasswd
 RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 # 配置SSH监听所有接口
