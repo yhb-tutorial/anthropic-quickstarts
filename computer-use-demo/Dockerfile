@@ -64,6 +64,9 @@ RUN mkdir /var/run/sshd
 RUN echo 'root:root' | chpasswd
 RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+# 配置SSH监听所有接口
+RUN echo "ListenAddress 0.0.0.0" >> /etc/ssh/sshd_config
+RUN echo "AddressFamily any" >> /etc/ssh/sshd_config
 
 # SSH登录修复
 RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
