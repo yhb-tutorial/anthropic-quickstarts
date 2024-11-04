@@ -78,8 +78,13 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 # setup user
 ENV USERNAME=computeruse
 ENV HOME=/home/$USERNAME
-RUN useradd -m -s /bin/bash -d $HOME $USERNAME
-RUN echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN useradd -m -s /bin/bash -d $HOME $USERNAME && \
+    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+    mkdir -p $HOME/.ssh && \
+    echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDIkZttXbZOHA02PWwrmhkeyhUoUZR+HrRJYEba5ZNLAxjK8W/8+jYFtXEKT3rpWcpy6Abr2DwZa823zyPv7S717dQ5da/hCXzFcJBeYHQHa9qlvrvZTH0QOWSCV1Ng+F3lOc5fFPHz9H/VoTVz3KmimJedCDl/wlsEJhmJ3gTsXqiX2kg+2rjukNql+5Qu4r76K9sBU1t5NzcBGo75UJ5lA4Ol/eWa+i2lzBv9NTzhmIolz/QbiPR7ihAHJyYiH5HpSh5aqH5sSCLy/Ke6+7R3Asj9PbiMGmoaeNFW8JZuApzwC5KOfksBmKTJ/FYiTeygKsKRG1kusHs1OuGE2Qh+Sog82oOAUJqv5Jz9PfGwg9p2pUy3kdRgptHNIiABIyCEmTFG8M+CZJalijD52uK0ChuxhCLCh4RmrXZ+pMNIQU9iWtNvxgfqai+RAFBQ5bOXwxU1fND6+cKCoCQvLFDsPSK598IcnShadVvjt1u2aFngN/X32NfL695MGTpEZ2M= yanghaibin@YHB-MacBook.local" > $HOME/.ssh/authorized_keys && \
+    chmod 700 $HOME/.ssh && \
+    chmod 600 $HOME/.ssh/authorized_keys && \
+    chown -R $USERNAME:$USERNAME $HOME/.ssh
 USER computeruse
 WORKDIR $HOME
 
