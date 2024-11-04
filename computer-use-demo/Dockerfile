@@ -59,13 +59,14 @@ RUN git clone --branch v1.5.0 https://github.com/novnc/noVNC.git /opt/noVNC && \
     git clone --branch v0.12.0 https://github.com/novnc/websockify /opt/noVNC/utils/websockify && \
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html
 
-# Configure SSH server
+# 配置SSH服务
 RUN mkdir /var/run/sshd
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config && \
-    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
-    echo "ListenAddress 0.0.0.0" >> /etc/ssh/sshd_config && \
-    echo "AddressFamily any" >> /etc/ssh/sshd_config && \
-    echo "AllowUsers computeruse" >> /etc/ssh/sshd_config
+RUN echo 'root:root' | chpasswd
+RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+# 配置SSH监听所有接口
+RUN echo "ListenAddress 0.0.0.0" >> /etc/ssh/sshd_config
+RUN echo "AddressFamily any" >> /etc/ssh/sshd_config
 
 # SSH登录修复
 RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
@@ -77,22 +78,10 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 # setup user
 ENV USERNAME=computeruse
 ENV HOME=/home/$USERNAME
-RUN useradd -m -s /bin/bash -d $HOME $USERNAME && \
-    echo "$USERNAME:computeruse" | chpasswd && \
-    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-
-# Create .ssh directory and set permissions
-RUN mkdir -p $HOME/.ssh && \
-    chmod 700 $HOME/.ssh && \
-    chown -R $USERNAME:$USERNAME $HOME/.ssh
-
+RUN useradd -m -s /bin/bash -d $HOME $USERNAME
+RUN echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 USER computeruse
 WORKDIR $HOME
-
-# 配置SSH监听所有接口
-RUN echo "ListenAddress 0.0.0.0" >> /etc/ssh/sshd_config
-RUN echo "AddressFamily any" >> /etc/ssh/sshd_config
-
 
 # setup python
 RUN git clone https://github.com/pyenv/pyenv.git ~/.pyenv && \
