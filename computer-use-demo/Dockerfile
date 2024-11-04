@@ -61,21 +61,23 @@ RUN git clone --branch v1.5.0 https://github.com/novnc/noVNC.git /opt/noVNC && \
 
 # SSH服务器配置
 RUN mkdir /var/run/sshd
-# 设置computeruse用户的密码为'computeruse'
-RUN echo 'computeruse:computeruse' | chpasswd
-# 允许使用密码登录
-RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
-# 允许SSH登录
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
-# 配置SSH监听所有接口
-RUN echo "ListenAddress 0.0.0.0" >> /etc/ssh/sshd_config
-RUN echo "AddressFamily any" >> /etc/ssh/sshd_config
+# 创建用户并设置密码
+RUN useradd -m -d /home/computeruse -s /bin/bash computeruse && \
+    echo "computeruse:computeruse" | chpasswd && \
+    adduser computeruse sudo
+
+# 允许使用密码登录
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
+    sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
 # SSH登录修复
 RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
 
 
+# 配置SSH监听所有接口
+RUN echo "ListenAddress 0.0.0.0" >> /etc/ssh/sshd_config
+RUN echo "AddressFamily any" >> /etc/ssh/sshd_config
 
 # 设置环境变量
 ENV NOTVISIBLE "in users profile"
