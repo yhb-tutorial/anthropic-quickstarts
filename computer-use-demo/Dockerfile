@@ -59,25 +59,17 @@ RUN git clone --branch v1.5.0 https://github.com/novnc/noVNC.git /opt/noVNC && \
     git clone --branch v0.12.0 https://github.com/novnc/websockify /opt/noVNC/utils/websockify && \
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html
 
-# SSH服务器配置
+# 配置SSH服务
 RUN mkdir /var/run/sshd
-
-# 创建用户并设置密码
-RUN useradd -m -d /home/computeruse -s /bin/bash computeruse && \
-    echo "computeruse:computeruse" | chpasswd && \
-    adduser computeruse sudo
-
-# 允许使用密码登录
-RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
-    sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
-
-# SSH登录修复
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-
-
+RUN echo 'root:root' | chpasswd
+RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 # 配置SSH监听所有接口
 RUN echo "ListenAddress 0.0.0.0" >> /etc/ssh/sshd_config
 RUN echo "AddressFamily any" >> /etc/ssh/sshd_config
+
+# SSH登录修复
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
 
 # 设置环境变量
 ENV NOTVISIBLE "in users profile"
@@ -86,13 +78,8 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 # setup user
 ENV USERNAME=computeruse
 ENV HOME=/home/$USERNAME
-RUN useradd -m -s /bin/bash -d $HOME $USERNAME && \
-    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
-    mkdir -p $HOME/.ssh && \
-    echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDIkZttXbZOHA02PWwrmhkeyhUoUZR+HrRJYEba5ZNLAxjK8W/8+jYFtXEKT3rpWcpy6Abr2DwZa823zyPv7S717dQ5da/hCXzFcJBeYHQHa9qlvrvZTH0QOWSCV1Ng+F3lOc5fFPHz9H/VoTVz3KmimJedCDl/wlsEJhmJ3gTsXqiX2kg+2rjukNql+5Qu4r76K9sBU1t5NzcBGo75UJ5lA4Ol/eWa+i2lzBv9NTzhmIolz/QbiPR7ihAHJyYiH5HpSh5aqH5sSCLy/Ke6+7R3Asj9PbiMGmoaeNFW8JZuApzwC5KOfksBmKTJ/FYiTeygKsKRG1kusHs1OuGE2Qh+Sog82oOAUJqv5Jz9PfGwg9p2pUy3kdRgptHNIiABIyCEmTFG8M+CZJalijD52uK0ChuxhCLCh4RmrXZ+pMNIQU9iWtNvxgfqai+RAFBQ5bOXwxU1fND6+cKCoCQvLFDsPSK598IcnShadVvjt1u2aFngN/X32NfL695MGTpEZ2M= yanghaibin@YHB-MacBook.local" > $HOME/.ssh/authorized_keys && \
-    chmod 700 $HOME/.ssh && \
-    chmod 600 $HOME/.ssh/authorized_keys && \
-    chown -R $USERNAME:$USERNAME $HOME/.ssh
+RUN useradd -m -s /bin/bash -d $HOME $USERNAME
+RUN echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 USER computeruse
 WORKDIR $HOME
 
