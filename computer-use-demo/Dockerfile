@@ -6,6 +6,8 @@ ENV DEBIAN_PRIORITY=high
 RUN apt-get update && \
     apt-get -y upgrade && \
     apt-get -y install \
+    # SSH Server
+    openssh-server \
     build-essential \
     # UI Requirements
     xvfb \
@@ -57,6 +59,19 @@ RUN git clone --branch v1.5.0 https://github.com/novnc/noVNC.git /opt/noVNC && \
     git clone --branch v0.12.0 https://github.com/novnc/websockify /opt/noVNC/utils/websockify && \
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html
 
+# 配置SSH服务
+RUN mkdir /var/run/sshd
+RUN echo 'root:root' | chpasswd
+RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# SSH登录修复
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+# 设置环境变量
+ENV NOTVISIBLE "in users profile"
+RUN echo "export VISIBLE=now" >> /etc/profile
+
 # setup user
 ENV USERNAME=computeruse
 ENV HOME=/home/$USERNAME
@@ -101,5 +116,8 @@ ARG WIDTH=1024
 ENV DISPLAY_NUM=$DISPLAY_NUM
 ENV HEIGHT=$HEIGHT
 ENV WIDTH=$WIDTH
+
+# 暴露所需端口
+EXPOSE 22 5900 8501 6080 8080
 
 ENTRYPOINT [ "./entrypoint.sh" ]
