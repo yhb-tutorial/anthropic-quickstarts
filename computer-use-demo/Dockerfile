@@ -102,6 +102,9 @@ ENV PATH="$HOME/.pyenv/shims:$HOME/.pyenv/bin:$PATH"
 RUN python -m pip install --upgrade pip==23.1.2 setuptools==58.0.4 wheel==0.40.0 && \
     python -m pip config set global.disable-pip-version-check true
 
+# 新增 FastAPI 相关依赖
+RUN python -m pip install fastapi uvicorn 
+
 # only reinstall if requirements.txt changes
 COPY --chown=$USERNAME:$USERNAME computer_use_demo/requirements.txt $HOME/computer_use_demo/requirements.txt
 RUN python -m pip install -r $HOME/computer_use_demo/requirements.txt
@@ -118,6 +121,6 @@ ENV HEIGHT=$HEIGHT
 ENV WIDTH=$WIDTH
 
 # 暴露所需端口
-EXPOSE 22 5900 8501 6080 8080
+EXPOSE 22 5900 8501 6080 8080 8000
 
 ENTRYPOINT [ "./entrypoint.sh" ]
