@@ -68,9 +68,6 @@ RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/
 RUN echo "ListenAddress 0.0.0.0" >> /etc/ssh/sshd_config
 RUN echo "AddressFamily any" >> /etc/ssh/sshd_config
 
-# SSH登录修复
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-
 # 设置环境变量
 ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
@@ -78,8 +75,13 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 # setup user
 ENV USERNAME=computeruse
 ENV HOME=/home/$USERNAME
-RUN useradd -m -s /bin/bash -d $HOME $USERNAME
-RUN echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN useradd -m -s /bin/bash -d $HOME $USERNAME && \
+    echo "$USERNAME:computeruse" | chpasswd && \
+    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+# Make sure SSH service directory has correct permissions
+RUN chown -R $USERNAME:$USERNAME /home/$USERNAME/.ssh 2>/dev/null || true
+
 USER computeruse
 WORKDIR $HOME
 
