@@ -69,6 +69,7 @@ RUN mkdir /var/run/sshd \
 ENV USERNAME=computeruse
 ENV HOME=/home/$USERNAME
 RUN useradd -m -s /bin/bash -d $HOME $USERNAME
+RUN echo "$USERNAME:changeme" | chpasswd
 RUN echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 USER computeruse
 WORKDIR $HOME
