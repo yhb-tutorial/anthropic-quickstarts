@@ -14,7 +14,7 @@ RUN apt-get update && \
     # xdotool \
     # scrot \
     # imagemagick \
-    # sudo \
+    sudo \
     # mutter \
     # x11vnc \
     # # Python/pyenv reqs
