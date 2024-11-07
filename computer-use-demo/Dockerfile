@@ -8,7 +8,6 @@ RUN apt-get update && \
     apt-get -y install \
     # SSH Server
     openssh-server \
-    build-essential \
     # UI Requirements
     xvfb \
     xterm \
@@ -59,19 +58,13 @@ RUN git clone --branch v1.5.0 https://github.com/novnc/noVNC.git /opt/noVNC && \
     git clone --branch v0.12.0 https://github.com/novnc/websockify /opt/noVNC/utils/websockify && \
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html
 
-# 配置SSH服务
-RUN mkdir /var/run/sshd
-RUN echo 'root:root' | chpasswd
-RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
-
-# SSH登录修复
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-
-# 设置环境变量
-ENV NOTVISIBLE "in users profile"
-RUN echo "export VISIBLE=now" >> /etc/profile
-
+# Configure SSH
+RUN mkdir /var/run/sshd \
+&& echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config \
+&& echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config \
+&& echo 'PermitEmptyPasswords no' >> /etc/ssh/sshd_config \
+&& echo 'GatewayPorts yes' >> /etc/ssh/sshd_config \
+&& sed -i 's/#ListenAddress 0.0.0.0/ListenAddress 0.0.0.0/' /etc/ssh/sshd_config
 # setup user
 ENV USERNAME=computeruse
 ENV HOME=/home/$USERNAME
@@ -103,7 +96,7 @@ RUN python -m pip install --upgrade pip==23.1.2 setuptools==58.0.4 wheel==0.40.0
     python -m pip config set global.disable-pip-version-check true
 
 # 新增 FastAPI 相关依赖
-RUN python -m pip install fastapi uvicorn 
+# RUN python -m pip install fastapi uvicorn 
 
 # only reinstall if requirements.txt changes
 COPY --chown=$USERNAME:$USERNAME computer_use_demo/requirements.txt $HOME/computer_use_demo/requirements.txt
