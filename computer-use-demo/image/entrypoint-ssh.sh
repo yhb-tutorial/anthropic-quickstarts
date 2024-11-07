@@ -6,8 +6,8 @@ set -e
 # 启动SSH服务
 sudo /usr/sbin/sshd
 
-./start_all.sh
-./novnc_startup.sh
+# ./start_all.sh
+# ./novnc_startup.sh
 
 # python http_server.py > /tmp/server_logs.txt 2>&1 &
 
