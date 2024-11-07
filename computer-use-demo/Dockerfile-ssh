@@ -14,7 +14,7 @@ RUN apt-get update && \
     # xdotool \
     # scrot \
     # imagemagick \
-    sudo \
+    # sudo \
     # mutter \
     # x11vnc \
     # # Python/pyenv reqs
@@ -52,6 +52,8 @@ RUN apt-get update && \
     # pcmanfm \
     # unzip && \
     apt-get clean
+
+RUN apt-get sudo
 
 # Install noVNC
 # RUN git clone --branch v1.5.0 https://github.com/novnc/noVNC.git /opt/noVNC && \
