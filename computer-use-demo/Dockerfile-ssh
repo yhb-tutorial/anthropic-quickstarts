@@ -36,6 +36,8 @@ RUN apt-get update && \
     netcat \
     # PPA req
     software-properties-common && \
+    # 添加 openssh-server
+    openssh-server && \
     # Userland apps
     sudo add-apt-repository ppa:mozillateam/ppa && \
     sudo apt-get install -y --no-install-recommends \
@@ -61,6 +63,19 @@ ENV USERNAME=computeruse
 ENV HOME=/home/$USERNAME
 RUN useradd -m -s /bin/bash -d $HOME $USERNAME
 RUN echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+
+# 设置SSH密码
+RUN echo "computeruse:computeruse" | chpasswd
+# 配置SSH允许密码认证和root登录
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#ListenAddress 0.0.0.0/ListenAddress 0.0.0.0/' /etc/ssh/sshd_config
+
+# 创建SSH所需目录
+RUN mkdir -p /run/sshd
+
+
 USER computeruse
 WORKDIR $HOME
 
